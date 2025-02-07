@@ -1,13 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { ShoppingBag, Star, Heart, Search, Filter, ChevronDown } from "lucide-react";
+import { database } from "../../lib/firebaseconfig";
+import { ref as dbRef, onValue } from "firebase/database";
+
+interface Product {
+  id?: string;         // <--- new field to store Firebase key
+  productName: string;
+  category: string;
+  price: number;
+  stock: number;
+  sku: string;
+  description: string;
+  imageUrls: string[];
+  createdAt: number;
+}
 
 export default function Shop() {
+  const router = useRouter();
+
+  // UI states for filters
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [priceRange, setPriceRange] = useState([0, 500]);
   const [showFilters, setShowFilters] = useState(false);
 
+  // Products fetched from Firebase
+  const [products, setProducts] = useState<Product[]>([]);
+
+  // Categories
   const categories = [
     { id: "all", name: "All Products" },
     { id: "new", name: "New Arrivals" },
@@ -16,6 +38,44 @@ export default function Shop() {
     { id: "outerwear", name: "Outerwear" },
     { id: "accessories", name: "Accessories" }
   ];
+
+  // Fetch products from Firebase Realtime Database
+  useEffect(() => {
+    const productsRef = dbRef(database, "products");
+    const unsubscribe = onValue(productsRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        // Convert the products object to an array, preserving the key
+        const productArray: Product[] = Object.keys(data).map((key) => {
+          return { id: key, ...data[key] };
+        });
+        setProducts(productArray);
+      } else {
+        setProducts([]);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  // Filter products by selected category and price range
+  const filteredProducts = products.filter((product) => {
+    const matchCategory =
+      selectedCategory === "all" ||
+      product.category.toLowerCase() === selectedCategory;
+    const matchPrice =
+      product.price >= priceRange[0] && product.price <= priceRange[1];
+    return matchCategory && matchPrice;
+  });
+
+  // Handler when "Add to Cart" is clicked
+  const handleAddToCart = (productKey: string | undefined) => {
+    if (!productKey) return;
+    // Navigate to /cart/[productKey]
+    router.push(`/cart/${productKey}`);
+  };
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -32,7 +92,9 @@ export default function Shop() {
         <div className="relative h-full flex items-center justify-center text-center px-4">
           <div className="max-w-2xl">
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">Our Collection</h1>
-            <p className="text-lg text-white/90">Discover our curated selection of premium fashion</p>
+            <p className="text-lg text-white/90">
+              Discover our curated selection of premium fashion
+            </p>
           </div>
         </div>
       </div>
@@ -109,7 +171,11 @@ export default function Shop() {
           {/* Products Grid */}
           <div className="flex-1">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-              <h2 className="text-2xl font-bold">All Products</h2>
+              <h2 className="text-2xl font-bold">
+                {selectedCategory === "all"
+                  ? "All Products"
+                  : selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}
+              </h2>
               <div className="flex items-center gap-4 w-full sm:w-auto">
                 <div className="relative flex-1 sm:flex-initial">
                   <input
@@ -128,52 +194,57 @@ export default function Shop() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Array(9).fill(null).map((_, index) => (
-                <div 
-                  key={index}
-                  className="group bg-white/80 backdrop-blur-md rounded-xl overflow-hidden shadow-sm hover:shadow-md transition"
-                >
-                  <div className="relative aspect-[3/4] overflow-hidden">
-                    <img
-                      src={`https://images.unsplash.com/photo-${[
-                        "1434389677669-e08b4cac3105",
-                        "1539533018447-63fcce2678e3",
-                        "1521223890158-f9f7c3d5d504",
-                        "1576566588028-4147f3842f27",
-                        "1487412720507-e7ab37603c6f",
-                        "1488161628813-04466f872be2",
-                        "1492707892479-7bc8d5a4ee93",
-                        "1434389677669-e08b4cac3105",
-                        "1539533018447-63fcce2678e3"
-                      ][index]}?q=80&w=1974`}
-                      alt={`Product ${index + 1}`}
-                      className="w-full h-full object-cover transform group-hover:scale-105 transition duration-500"
-                    />
-                    <button className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Heart className="w-5 h-5" />
-                    </button>
-                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <button className="w-full bg-white/90 backdrop-blur-sm text-black py-3 rounded-lg font-semibold flex items-center justify-center gap-2">
-                          <ShoppingBag className="w-5 h-5" /> Add to Cart
-                        </button>
+            {filteredProducts.length === 0 ? (
+              <p className="text-center text-gray-500">No products found.</p>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredProducts.map((product) => (
+                  <div 
+                    key={product.id}
+                    className="group bg-white/80 backdrop-blur-md rounded-xl overflow-hidden shadow-sm hover:shadow-md transition"
+                  >
+                    <div className="relative aspect-[3/4] overflow-hidden">
+                      <img
+                        src={
+                          product.imageUrls && product.imageUrls[0]
+                            ? product.imageUrls[0]
+                            : "https://via.placeholder.com/300"
+                        }
+                        alt={product.productName}
+                        className="w-full h-full object-cover transform group-hover:scale-105 transition duration-500"
+                      />
+                      <button className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Heart className="w-5 h-5" />
+                      </button>
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute bottom-4 left-4 right-4">
+                          <button
+                            className="w-full bg-white/90 backdrop-blur-sm text-black py-3 rounded-lg font-semibold flex items-center justify-center gap-2"
+                            onClick={() => handleAddToCart(product.id)}
+                          >
+                            <ShoppingBag className="w-5 h-5" />
+                            Add to Cart
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-lg mb-2">{product.productName}</h3>
+                      <div className="flex justify-between items-center">
+                        <span className="text-lg font-bold">
+                          ${product.price.toFixed(2)}
+                        </span>
+                        {/* Optional rating element */}
+                        <div className="flex items-center gap-1">
+                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                          <span className="text-sm text-gray-600">4.8</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-lg mb-2">Premium Fashion Item</h3>
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-bold">$199.99</span>
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm text-gray-600">4.8</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             <div className="mt-12 flex justify-center">
               <button className="px-8 py-3 bg-black text-white rounded-lg font-semibold hover:bg-black/90 transition">

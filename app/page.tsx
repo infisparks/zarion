@@ -28,75 +28,7 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       {/* Navbar */}
-      <nav className={`fixed w-full z-50 transition-all duration-300 ${
-        isScrolled ? "bg-white/80 backdrop-blur-lg shadow-md" : "bg-transparent"
-      }`}>
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-20">
-            <div className="flex items-center gap-12">
-              <h1 className={`text-2xl font-bold ${isScrolled ? "text-black" : "text-white"}`}>ZARION</h1>
-              <div className="hidden md:flex items-center gap-8">
-                {["home", "shop", "men", "women", "accessories"].map((item) => (
-                  <button
-                    key={item}
-                    onClick={() => setActiveTab(item)}
-                    className={`${
-                      isScrolled ? "text-gray-800" : "text-white"
-                    } capitalize hover:opacity-70 transition ${
-                      activeTab === item ? "font-semibold" : ""
-                    }`}
-                  >
-                    {item}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            <div className="hidden md:flex items-center gap-6">
-              <Search className={`w-5 h-5 ${isScrolled ? "text-gray-800" : "text-white"}`} />
-              <Heart className={`w-5 h-5 ${isScrolled ? "text-gray-800" : "text-white"}`} />
-              <User className={`w-5 h-5 ${isScrolled ? "text-gray-800" : "text-white"}`} />
-              <div className="relative">
-                <ShoppingCart className={`w-5 h-5 ${isScrolled ? "text-gray-800" : "text-white"}`} />
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center">
-                  3
-                </span>
-              </div>
-            </div>
-
-            <button 
-              className="md:hidden"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? 
-                <X className={`w-6 h-6 ${isScrolled ? "text-gray-800" : "text-white"}`} /> : 
-                <Menu className={`w-6 h-6 ${isScrolled ? "text-gray-800" : "text-white"}`} />
-              }
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden bg-white">
-            <div className="px-4 py-6 space-y-4">
-              {["home", "shop", "men", "women", "accessories"].map((item) => (
-                <div key={item}>
-                  <button
-                    onClick={() => {
-                      setActiveTab(item);
-                      setMobileMenuOpen(false);
-                    }}
-                    className="w-full text-left py-2 text-gray-800 capitalize"
-                  >
-                    {item}
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </nav>
+     
 
       {renderContent()}
     </main>
@@ -145,7 +77,7 @@ const HomeContent = () => (
               description: "Modern & Sophisticated"
             },
             {
-              title: "Accessories",
+              title: "Accessoriess",
               image: "https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93?q=80&w=1965",
               description: "Complete Your Look"
             }
