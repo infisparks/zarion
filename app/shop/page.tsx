@@ -2,19 +2,29 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ShoppingBag, Star, Heart, Search, Filter, ChevronDown } from "lucide-react";
+import { 
+  ShoppingBag, 
+  ChevronRight, 
+  Star, 
+  Heart, 
+  Search, 
+  Filter, 
+  ChevronDown 
+} from "lucide-react";
 import { database } from "../../lib/firebaseconfig";
 import { ref as dbRef, onValue } from "firebase/database";
 
 interface Product {
-  id?: string;         // <--- new field to store Firebase key
+  id?: string;         // Firebase key
   productName: string;
   category: string;
   price: number;
+  discount?: number;   // Optional discount price
   stock: number;
-  sku: string;
+  sku?: string;
   description: string;
   imageUrls: string[];
+  sizes?: string[];
   createdAt: number;
 }
 
@@ -23,11 +33,13 @@ export default function Shop() {
 
   // UI states for filters
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [priceRange, setPriceRange] = useState([0, 500]);
+  // Set price range from 0 to 2000 so products with price 1000 appear.
+  const [priceRange, setPriceRange] = useState([0, 2000]);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Products fetched from Firebase
+  // Products fetched from Firebase and loading state
   const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
   // Categories
   const categories = [
@@ -39,21 +51,35 @@ export default function Shop() {
     { id: "accessories", name: "Accessories" }
   ];
 
+  // Helper to calculate discount percentage
+  const getDiscountPercentage = (price: number, discount: number) => {
+    if (!price || price === 0) return 0;
+    return Math.round(((price - discount) / price) * 100);
+  };
+
   // Fetch products from Firebase Realtime Database
   useEffect(() => {
     const productsRef = dbRef(database, "products");
-    const unsubscribe = onValue(productsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        // Convert the products object to an array, preserving the key
-        const productArray: Product[] = Object.keys(data).map((key) => {
-          return { id: key, ...data[key] };
-        });
-        setProducts(productArray);
-      } else {
-        setProducts([]);
+    const unsubscribe = onValue(
+      productsRef,
+      (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          const productArray: Product[] = Object.keys(data).map((key) => ({
+            id: key,
+            ...data[key],
+          }));
+          setProducts(productArray);
+        } else {
+          setProducts([]);
+        }
+        setLoadingProducts(false);
+      },
+      (error) => {
+        console.error("Error fetching products:", error);
+        setLoadingProducts(false);
       }
-    });
+    );
 
     return () => {
       unsubscribe();
@@ -73,7 +99,6 @@ export default function Shop() {
   // Handler when "Add to Cart" is clicked
   const handleAddToCart = (productKey: string | undefined) => {
     if (!productKey) return;
-    // Navigate to /cart/[productKey]
     router.push(`/cart/${productKey}`);
   };
 
@@ -141,14 +166,14 @@ export default function Shop() {
                 <input 
                   type="range"
                   min="0"
-                  max="1000"
+                  max="2000"
                   step="10"
                   className="w-full"
                   onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
                 />
                 <div className="flex justify-between text-sm">
-                  <span>${priceRange[0]}</span>
-                  <span>${priceRange[1]}</span>
+                  <span>Rs. {priceRange[0]}</span>
+                  <span>Rs. {priceRange[1]}</span>
                 </div>
               </div>
             </div>
@@ -194,10 +219,12 @@ export default function Shop() {
               </div>
             </div>
 
-            {filteredProducts.length === 0 ? (
+            {loadingProducts ? (
+              <p className="text-center text-gray-500">Loading products...</p>
+            ) : filteredProducts.length === 0 ? (
               <p className="text-center text-gray-500">No products found.</p>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProducts.map((product) => (
                   <div 
                     key={product.id}
@@ -211,7 +238,7 @@ export default function Shop() {
                             : "https://via.placeholder.com/300"
                         }
                         alt={product.productName}
-                        className="w-full h-full object-cover transform group-hover:scale-105 transition duration-500"
+                        className="w-full h-full object-contain object-center transition-transform group-hover:scale-105 duration-500"
                       />
                       <button className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
                         <Heart className="w-5 h-5" />
@@ -230,15 +257,26 @@ export default function Shop() {
                     </div>
                     <div className="p-4">
                       <h3 className="font-semibold text-lg mb-2">{product.productName}</h3>
-                      <div className="flex justify-between items-center">
-                        <span className="text-lg font-bold">
-                          ${product.price.toFixed(2)}
-                        </span>
-                        {/* Optional rating element */}
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                          <span className="text-sm text-gray-600">4.8</span>
-                        </div>
+                      <div className="flex flex-col">
+                        {product.discount ? (
+                          <>
+                            <span className="text-lg font-bold text-green-700">
+                              Rs. {product.discount.toFixed(2)}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm line-through text-gray-500">
+                                Rs. {product.price.toFixed(2)}
+                              </span>
+                              <span className="text-sm text-green-600">
+                                Save Rs. {(product.price - product.discount).toFixed(2)} ({getDiscountPercentage(product.price, product.discount)}% off)
+                              </span>
+                            </div>
+                          </>
+                        ) : (
+                          <span className="text-lg font-bold">
+                            Rs. {product.price.toFixed(2)}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

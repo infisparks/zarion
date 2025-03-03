@@ -2,7 +2,7 @@
 
 import { useState, ChangeEvent, DragEvent, FormEvent } from "react";
 import { Upload, Plus, X } from "lucide-react";
-import { storage, database } from "../../lib/firebaseconfig";
+import { storage, database } from "../../../lib/firebaseconfig";
 import { ref as storageRef, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { ref as dbRef, push, set } from "firebase/database";
 
@@ -16,9 +16,13 @@ export default function ProductUpload() {
   const [productName, setProductName] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
+  const [discount, setDiscount] = useState(""); // New Discount Price field
   const [stock, setStock] = useState("");
-  const [sku, setSku] = useState("");
   const [description, setDescription] = useState("");
+
+  // State for sizes array and input
+  const [sizes, setSizes] = useState<string[]>([]);
+  const [sizeInput, setSizeInput] = useState("");
 
   // Image state holds both file and preview URL
   const [images, setImages] = useState<ImageData[]>([]);
@@ -60,6 +64,19 @@ export default function ProductUpload() {
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
+  // Add a size to the sizes array
+  const handleAddSize = () => {
+    if (sizeInput.trim() && !sizes.includes(sizeInput.trim())) {
+      setSizes(prev => [...prev, sizeInput.trim()]);
+      setSizeInput("");
+    }
+  };
+
+  // Remove a size from the sizes array
+  const handleRemoveSize = (index: number) => {
+    setSizes(prev => prev.filter((_, i) => i !== index));
+  };
+
   // Handle form submission
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -91,32 +108,33 @@ export default function ProductUpload() {
         })
       );
       
-     const productsRef = dbRef(database, "products");
+      const productsRef = dbRef(database, "products");
       const newProductRef = push(productsRef);
-      // Create a product object
+      // Create a product object without SKU, and include discount and sizes
       const productData = {
         productName,
         category,
         price: parseFloat(price),
+        discount: parseFloat(discount), // discount price field
         stock: parseInt(stock, 10),
-        sku,
         description,
         imageUrls: uploadedImageUrls,
-        createdAt: Date.now(),
-        product_key:newProductRef
+        sizes, // array of sizes
+        createdAt: Date.now()
       };
       
       // Save the product data to the Realtime Database under "products"
- 
       await set(newProductRef, productData);
 
       // Optionally, clear the form and images after successful upload
       setProductName("");
       setCategory("");
       setPrice("");
+      setDiscount("");
       setStock("");
-      setSku("");
       setDescription("");
+      setSizes([]);
+      setSizeInput("");
       setImages([]);
       alert("Product uploaded successfully!");
     } catch (error) {
@@ -166,7 +184,7 @@ export default function ProductUpload() {
                 </div>
               </div>
 
-              {/* Price and Stock */}
+              {/* Price, Discount, and Stock */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <label className="block text-sm font-medium mb-2">Price ($)</label>
@@ -180,6 +198,17 @@ export default function ProductUpload() {
                   />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium mb-2">Discount Price ($)</label>
+                  <input
+                    type="number"
+                    className="w-full px-4 py-2 rounded-lg border bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-black/20"
+                    placeholder="0.00"
+                    value={discount}
+                    onChange={(e) => setDiscount(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
                   <label className="block text-sm font-medium mb-2">Stock</label>
                   <input
                     type="number"
@@ -187,17 +216,6 @@ export default function ProductUpload() {
                     placeholder="0"
                     value={stock}
                     onChange={(e) => setStock(e.target.value)}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">SKU</label>
-                  <input
-                    type="text"
-                    className="w-full px-4 py-2 rounded-lg border bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-black/20"
-                    placeholder="Enter SKU"
-                    value={sku}
-                    onChange={(e) => setSku(e.target.value)}
                     required
                   />
                 </div>
@@ -213,6 +231,43 @@ export default function ProductUpload() {
                   onChange={(e) => setDescription(e.target.value)}
                   required
                 />
+              </div>
+
+              {/* Sizes Input */}
+              <div>
+                <label className="block text-sm font-medium mb-2">Sizes</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Enter size (e.g., S, M, L)"
+                    value={sizeInput}
+                    onChange={(e) => setSizeInput(e.target.value)}
+                    className="flex-1 px-4 py-2 rounded-lg border bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-black/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddSize}
+                    className="px-4 py-2 bg-black text-white rounded-lg font-semibold hover:bg-black/90 transition"
+                  >
+                    Add Size
+                  </button>
+                </div>
+                {sizes.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {sizes.map((size, index) => (
+                      <span key={index} className="inline-flex items-center bg-gray-200 px-3 py-1 rounded-full">
+                        {size}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveSize(index)}
+                          className="ml-2 text-gray-600 hover:text-gray-800"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Image Upload */}
@@ -234,8 +289,7 @@ export default function ProductUpload() {
                       type="button"
                       className="text-black font-medium"
                       onClick={() => {
-                        // Optionally, you can trigger a hidden file input here
-                        // to allow users to browse files.
+                        // Optionally, trigger a hidden file input here
                       }}
                     >
                       browse
@@ -265,7 +319,6 @@ export default function ProductUpload() {
                         </button>
                       </div>
                     ))}
-                    {/* Optionally allow adding more images if less than 4 */}
                     {images.length < 4 && (
                       <button
                         type="button"

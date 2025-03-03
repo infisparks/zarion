@@ -14,13 +14,14 @@ import {
 } from "firebase/database";
 import { onAuthStateChanged } from "firebase/auth";
 
-// The cart item structure as stored under users/{uid}/cart
+// Updated interface now includes a "size" field.
 interface RawCartItem {
   productKey: string;
   productName: string;
   quantity: number;
   price: number;
   addedAt: number;
+  size?: string;
 }
 
 // This interface is what we'll display in the cart UI
@@ -109,6 +110,7 @@ export default function CartPage() {
             quantity: cartItem.quantity,
             price: cartItem.price,
             addedAt: cartItem.addedAt,
+            size: cartItem.size, // Include size if available
           };
         });
 
@@ -201,7 +203,7 @@ export default function CartPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center  bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <p className="text-xl text-gray-700">Loading cart...</p>
       </div>
     );
@@ -246,6 +248,9 @@ export default function CartPage() {
                     <p className="text-sm text-gray-500">
                       Quantity: {item.quantity}
                     </p>
+                    {item.size && (
+                      <p className="text-sm text-gray-500">Size: {item.size}</p>
+                    )}
                   </div>
 
                   {/* Price & Delete Option */}
