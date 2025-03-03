@@ -231,7 +231,7 @@ export default function CartPage() {
                       <img
                         src={item.productImage}
                         alt={item.productName}
-                        className="w-full h-32 object-cover rounded-lg shadow-sm"
+                        className="w-full h-32 object-contain object-center rounded-lg shadow-sm"
                       />
                     ) : (
                       <div className="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center">

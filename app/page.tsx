@@ -90,7 +90,7 @@ const HomeContent = () => {
 
   return (
     <div>
-      {/* Hero Section with Scrollable Product Carousel */}
+      {/* Hero Section */}
       <section className="relative h-screen flex flex-col justify-center md:justify-end pb-20">
         <div className="absolute inset-0 z-0">
           <div 
@@ -157,50 +157,6 @@ const HomeContent = () => {
         </div>
       </section>
 
-      {/* Categories Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "Women's Collection",
-                image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=2071",
-                description: "Elegant & Timeless"
-              },
-              {
-                title: "Men's Collection",
-                image: "https://images.unsplash.com/photo-1488161628813-04466f872be2?q=80&w=1964",
-                description: "Modern & Sophisticated"
-              },
-              {
-                title: "Accessories",
-                image: "https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93?q=80&w=1965",
-                description: "Complete Your Look"
-              }
-            ].map((category, index) => (
-              <div 
-                key={index} 
-                className="group cursor-pointer relative overflow-hidden rounded-lg aspect-[3/4]"
-              >
-                <img 
-                  src={category.image} 
-                  alt={category.title}
-                  className="w-full h-full object-cover transform group-hover:scale-105 transition duration-700"
-                />
-                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-300" />
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-6 text-center">
-                  <h3 className="text-2xl font-bold mb-2">{category.title}</h3>
-                  <p className="text-lg mb-4">{category.description}</p>
-                  <button className="bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full border border-white/40 hover:bg-white/30 transition">
-                    Shop Now
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* New Arrivals Section */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
@@ -208,7 +164,6 @@ const HomeContent = () => {
           <p className="text-gray-600 text-center mb-12 max-w-2xl mx-auto">
             Discover our latest collection of premium clothing and accessories.
           </p>
-          {/* Updated grid to show 2 columns on mobile */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {products.length === 0 ? (
               <p className="text-center">Loading products...</p>
@@ -255,6 +210,50 @@ const HomeContent = () => {
                 </Link>
               ))
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* Categories Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                title: "Women's Collection",
+                image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=2071",
+                description: "Elegant & Timeless"
+              },
+              {
+                title: "Men's Collection",
+                image: "https://images.unsplash.com/photo-1488161628813-04466f872be2?q=80&w=1964",
+                description: "Modern & Sophisticated"
+              },
+              {
+                title: "Accessories",
+                image: "https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93?q=80&w=1965",
+                description: "Complete Your Look"
+              }
+            ].map((category, index) => (
+              <div 
+                key={index} 
+                className="group cursor-pointer relative overflow-hidden rounded-lg aspect-[3/4]"
+              >
+                <img 
+                  src={category.image} 
+                  alt={category.title}
+                  className="w-full h-full object-cover transform group-hover:scale-105 transition duration-700"
+                />
+                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors duration-300" />
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-6 text-center">
+                  <h3 className="text-2xl font-bold mb-2">{category.title}</h3>
+                  <p className="text-lg mb-4">{category.description}</p>
+                  <button className="bg-white/20 backdrop-blur-sm px-6 py-2 rounded-full border border-white/40 hover:bg-white/30 transition">
+                    Shop Now
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
