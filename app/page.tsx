@@ -91,7 +91,7 @@ const HomeContent = () => {
   return (
     <div>
       {/* Hero Section with Scrollable Product Carousel */}
-      <section className="relative h-screen flex flex-col justify-end pb-20">
+      <section className="relative h-screen flex flex-col justify-center md:justify-end pb-20">
         <div className="absolute inset-0 z-0">
           <div 
             className="w-full h-full bg-cover bg-center"
