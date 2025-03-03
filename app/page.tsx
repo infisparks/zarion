@@ -208,7 +208,8 @@ const HomeContent = () => {
           <p className="text-gray-600 text-center mb-12 max-w-2xl mx-auto">
             Discover our latest collection of premium clothing and accessories.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          {/* Updated grid to show 2 columns on mobile */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {products.length === 0 ? (
               <p className="text-center">Loading products...</p>
             ) : (
