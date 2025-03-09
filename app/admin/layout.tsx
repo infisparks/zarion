@@ -1,18 +1,17 @@
-// app/layout.tsx
-import "./globals.css";
+// app/admin/layout.tsx
+import "../globals.css"; // Adjust path as needed
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import Navigation from "./components/Navigation";
-import Footer from "./components/Footer";
+import Footer from "../components/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Zarion - Premium Fashion",
-  description: "Premium fashion destination offering curated collections",
+  title: "Admin - Zarion",
+  description: "Admin dashboard for Zarion",
 };
 
-export default function RootLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -20,8 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Navigation />
-        <main className="min-h-screen pt-16 md:pt-0 pb-16 mt-0 md:pb-0">
+        <main className="min-h-screen pt-16 pb-16">
           {children}
         </main>
         <Footer />

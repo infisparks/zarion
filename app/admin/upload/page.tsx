@@ -16,7 +16,7 @@ export default function ProductUpload() {
   const [productName, setProductName] = useState("");
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
-  const [discount, setDiscount] = useState(""); // New Discount Price field
+  const [discount, setDiscount] = useState(""); // Discount Price field
   const [stock, setStock] = useState("");
   const [description, setDescription] = useState("");
 
@@ -115,11 +115,11 @@ export default function ProductUpload() {
         productName,
         category,
         price: parseFloat(price),
-        discount: parseFloat(discount), // discount price field
+        discount: parseFloat(discount),
         stock: parseInt(stock, 10),
         description,
         imageUrls: uploadedImageUrls,
-        sizes, // array of sizes
+        sizes,
         createdAt: Date.now()
       };
       
@@ -176,10 +176,12 @@ export default function ProductUpload() {
                     required
                   >
                     <option value="">Select category</option>
-                    <option value="Dresses">Dresses</option>
-                    <option value="Tops">Tops</option>
-                    <option value="Outerwear">Outerwear</option>
-                    <option value="Accessories">Accessories</option>
+                    <option value="T-shirt">T-shirt</option>
+                    <option value="Shirt">Shirt</option>
+                    <option value="Udy">Udy</option>
+                    <option value="Pent">Pent</option>
+                    <option value="Trouser">Trouser</option>
+                    <option value="All Mens Wear">All Mens Wear</option>
                   </select>
                 </div>
               </div>
@@ -187,7 +189,7 @@ export default function ProductUpload() {
               {/* Price, Discount, and Stock */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Price ($)</label>
+                  <label className="block text-sm font-medium mb-2">Price (Rs.)</label>
                   <input
                     type="number"
                     className="w-full px-4 py-2 rounded-lg border bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-black/20"
@@ -198,7 +200,7 @@ export default function ProductUpload() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Discount Price ($)</label>
+                  <label className="block text-sm font-medium mb-2">Discount Price (Rs.)</label>
                   <input
                     type="number"
                     className="w-full px-4 py-2 rounded-lg border bg-white/80 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-black/20"

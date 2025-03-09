@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { database } from "../lib/firebaseconfig";
 import { ref as dbRef, onValue } from "firebase/database";
 
 interface Product {
-  id?: string;         // Firebase key
+  id?: string;
   productName: string;
   category: string;
   price: number;
-  discount?: number;   // Discounted price that the user pays
+  discount?: number;
   stock: number;
   sku?: string;
   description: string;
@@ -20,96 +20,66 @@ interface Product {
 }
 
 export default function Home() {
+  // State to track the currently selected category filter.
+  // "All Mens Wear" is used as the catch-all to show every product.
+  const [selectedCategory, setSelectedCategory] = useState("All Mens Wear");
+
   return (
     <main className="min-h-screen bg-gray-50">
-      <CategoriesSlider />
-      <ProductsSection />
+      <CategoriesNavigation 
+        selectedCategory={selectedCategory} 
+        setSelectedCategory={setSelectedCategory} 
+      />
+      <ProductsSection selectedCategory={selectedCategory} />
     </main>
   );
 }
 
-const CategoriesSlider = () => {
+interface CategoriesNavigationProps {
+  selectedCategory: string;
+  setSelectedCategory: (category: string) => void;
+}
+
+const CategoriesNavigation = ({
+  selectedCategory,
+  setSelectedCategory,
+}: CategoriesNavigationProps) => {
   const categories = [
-    { title: "Women's", image: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=2071" },
-    { title: "Men's", image: "https://images.unsplash.com/photo-1488161628813-04466f872be2?q=80&w=1964" },
-    { title: "Accessories", image: "https://images.unsplash.com/photo-1492707892479-7bc8d5a4ee93?q=80&w=1965" },
-    { title: "Sale", image: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=2071" },
+    { title: "T-shirt", icon: "👕" },
+    { title: "Shirt", icon: "👔" },
+    { title: "Udy", icon: "🧥" },
+    { title: "Pent", icon: "👖" },
+    { title: "Trouser", icon: "👖" },
+    { title: "All Mens Wear", icon: "🛍️" },
   ];
 
-  const sliderRef = useRef<HTMLDivElement>(null);
-  const [cardsPerPage, setCardsPerPage] = useState<number>(2);
-  const [activePage, setActivePage] = useState<number>(0);
-
-  useEffect(() => {
-    const updateCardsPerPage = () => {
-      if (window.innerWidth >= 768) {
-        setCardsPerPage(4);
-      } else {
-        setCardsPerPage(2);
-      }
-    };
-    updateCardsPerPage();
-    window.addEventListener("resize", updateCardsPerPage);
-    return () => window.removeEventListener("resize", updateCardsPerPage);
-  }, []);
-
-  const totalPages = Math.ceil(categories.length / cardsPerPage);
-
-  const scrollToPage = (pageIndex: number) => {
-    if (sliderRef.current) {
-      sliderRef.current.scrollTo({ left: pageIndex * sliderRef.current.clientWidth, behavior: "smooth" });
-    }
-  };
-
-  useEffect(() => {
-    const slider = sliderRef.current;
-    if (!slider) return;
-    const handleScroll = () => {
-      const page = Math.round(slider.scrollLeft / slider.clientWidth);
-      setActivePage(page);
-    };
-    slider.addEventListener("scroll", handleScroll);
-    return () => slider.removeEventListener("scroll", handleScroll);
-  }, [cardsPerPage]);
-
   return (
-    <section className="py-4 bg-gray-100 relative md:mt-20">
+    <nav className="sticky top-0 bg-white shadow-sm z-10 md:mt-20">
       <div className="container mx-auto px-4">
-        <div className="overflow-x-auto snap-x snap-mandatory scrollbar-hide">
-          <div ref={sliderRef} className="flex space-x-4">
-            {categories.map((category, index) => (
-              <div
-                key={index}
-                className="snap-start flex-shrink-0 w-1/2 md:w-1/4 text-center"
-              >
-                <div className="p-4 bg-white rounded-xl shadow">
-                  <img
-                    src={category.image}
-                    alt={category.title}
-                    className="w-full h-24 object-cover rounded-full"
-                  />
-                  <p className="mt-2 text-sm font-medium">{category.title}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        {/* Dot Indicators */}
-        <div className="flex justify-center mt-4 space-x-2">
-          {Array.from({ length: totalPages }).map((_, index) => (
+        <div className="flex overflow-x-auto scrollbar-hide py-3 space-x-6">
+          {categories.map((category, index) => (
             <button
               key={index}
-              onClick={() => scrollToPage(index)}
-              className={`w-3 h-3 rounded-full ${activePage === index ? "bg-blue-500" : "bg-gray-300"}`}
-            ></button>
+              onClick={() => setSelectedCategory(category.title)}
+              className={`flex-shrink-0 flex items-center space-x-2 text-gray-600 hover:text-black transition-colors ${
+                selectedCategory === category.title ? "font-bold" : ""
+              }`}
+            >
+              <span className="text-xl">{category.icon}</span>
+              <span className="text-sm font-medium">{category.title}</span>
+            </button>
           ))}
         </div>
       </div>
-    </section>
+    </nav>
   );
 };
 
-const ProductsSection = () => {
+interface ProductsSectionProps {
+  selectedCategory: string;
+}
+
+const ProductsSection = ({ selectedCategory }: ProductsSectionProps) => {
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
@@ -129,6 +99,13 @@ const ProductsSection = () => {
     return () => unsubscribe();
   }, []);
 
+  // Filter products based on the selected category.
+  // If "All Mens Wear" is selected, show all products.
+  const filteredProducts =
+    selectedCategory === "All Mens Wear"
+      ? products
+      : products.filter((product) => product.category === selectedCategory);
+
   const getDiscountPercentage = (price: number, discount?: number): number => {
     if (discount === undefined || price === 0) return 0;
     return Math.round(((price - discount) / price) * 100);
@@ -137,43 +114,50 @@ const ProductsSection = () => {
   return (
     <section className="py-8">
       <div className="container mx-auto px-4">
-        <h2 className="text-2xl font-bold mb-4">Latest Products</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {products.length === 0 ? (
-            <p>Loading products...</p>
-          ) : (
-            products.map((product) => (
-              <Link key={product.id} href={`/cart/${product.id}`}>
-                <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer">
-                  <div className="relative aspect-[3/4]">
-                    <img
-                      src={product.imageUrls?.[0] || "https://via.placeholder.com/300"}
-                      alt={product.productName}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-lg">{product.productName}</h3>
-                    <div className="flex flex-col">
-                      <span className="text-lg font-bold">
-                        Rs. {product.discount ? product.discount.toFixed(2) : product.price.toFixed(2)}
-                      </span>
-                      {product.discount && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm line-through text-gray-500">
-                            Rs. {product.price.toFixed(2)}
-                          </span>
-                          <span className="text-sm text-green-600">
-                            {getDiscountPercentage(product.price, product.discount)}% off
-                          </span>
-                        </div>
-                      )}
+        <h2 className="text-2xl font-bold mb-6 px-2">New Arrivals</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          {filteredProducts.map((product) => (
+            <Link key={product.id} href={`/cart/${product.id}`}>
+              <div className="group bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer">
+                <div className="relative aspect-square">
+                  <img
+                    src={
+                      product.imageUrls?.[0] ||
+                      "https://via.placeholder.com/300"
+                    }
+                    alt={product.productName}
+                    className="w-full h-full object-contain object-center transform group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {product.discount && (
+                    <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                      {getDiscountPercentage(product.price, product.discount)}% OFF
                     </div>
-                  </div>
+                  )}
                 </div>
-              </Link>
-            ))
-          )}
+                <div className="p-3 space-y-1">
+                  <h3 className="font-medium text-gray-900 line-clamp-1">
+                    {product.productName}
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold text-gray-900">
+                      Rs.{" "}
+                      {product.discount
+                        ? product.discount.toFixed(2)
+                        : product.price.toFixed(2)}
+                    </span>
+                    {product.discount && (
+                      <span className="text-sm line-through text-gray-400">
+                        Rs. {product.price.toFixed(2)}
+                      </span>
+                    )}
+                  </div>
+                  <button className="w-full mt-2 bg-black text-white py-2 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    Quick View
+                  </button>
+                </div>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
     </section>
