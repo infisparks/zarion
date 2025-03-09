@@ -4,8 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { 
   ShoppingBag, 
-  ChevronRight, 
-  Star, 
   Heart, 
   Search, 
   Filter, 
@@ -31,9 +29,8 @@ interface Product {
 export default function Shop() {
   const router = useRouter();
 
-  // UI states for filters
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  // Set price range from 0 to 2000 so products with price 1000 appear.
+  // Update category filter using the provided options.
+  const [selectedCategory, setSelectedCategory] = useState("T-shirt");
   const [priceRange, setPriceRange] = useState([0, 2000]);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -41,14 +38,14 @@ export default function Shop() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
 
-  // Categories
+  // Updated categories list
   const categories = [
-    { id: "all", name: "All Products" },
-    { id: "new", name: "New Arrivals" },
-    { id: "dresses", name: "Dresses" },
-    { id: "tops", name: "Tops" },
-    { id: "outerwear", name: "Outerwear" },
-    { id: "accessories", name: "Accessories" }
+    { id: "T-shirt", name: "T-shirt" },
+    { id: "Shirt", name: "Shirt" },
+    { id: "Udy", name: "Udy" },
+    { id: "Pent", name: "Pent" },
+    { id: "Trouser", name: "Trouser" },
+    { id: "All Mens Wear", name: "All Mens Wear" }
   ];
 
   // Helper to calculate discount percentage
@@ -88,9 +85,7 @@ export default function Shop() {
 
   // Filter products by selected category and price range
   const filteredProducts = products.filter((product) => {
-    const matchCategory =
-      selectedCategory === "all" ||
-      product.category.toLowerCase() === selectedCategory;
+    const matchCategory = product.category === selectedCategory;
     const matchPrice =
       product.price >= priceRange[0] && product.price <= priceRange[1];
     return matchCategory && matchPrice;
@@ -197,9 +192,7 @@ export default function Shop() {
           <div className="flex-1">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
               <h2 className="text-2xl font-bold">
-                {selectedCategory === "all"
-                  ? "All Products"
-                  : selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}
+                {selectedCategory}
               </h2>
               <div className="flex items-center gap-4 w-full sm:w-auto">
                 <div className="relative flex-1 sm:flex-initial">
@@ -228,7 +221,7 @@ export default function Shop() {
                 {filteredProducts.map((product) => (
                   <div 
                     key={product.id}
-                    className="group bg-white/80 backdrop-blur-md rounded-xl overflow-hidden shadow-sm hover:shadow-md transition"
+                    className="group bg-white/80 backdrop-blur-md rounded-xl overflow-hidden shadow-sm hover:shadow-md transition relative"
                   >
                     <div className="relative aspect-[3/4] overflow-hidden">
                       <img
@@ -240,9 +233,16 @@ export default function Shop() {
                         alt={product.productName}
                         className="w-full h-full object-contain object-center transition-transform group-hover:scale-105 duration-500"
                       />
-                      <button className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                      {/* Heart Icon on top left */}
+                      <button className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
                         <Heart className="w-5 h-5" />
                       </button>
+                      {/* Discount Badge on top right */}
+                      {product.discount && (
+                        <div className="absolute top-4 right-4 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                          {getDiscountPercentage(product.price, product.discount)}% OFF
+                        </div>
+                      )}
                       <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
                         <div className="absolute bottom-4 left-4 right-4">
                           <button
@@ -266,9 +266,6 @@ export default function Shop() {
                             <div className="flex items-center gap-2">
                               <span className="text-sm line-through text-gray-500">
                                 Rs. {product.price.toFixed(2)}
-                              </span>
-                              <span className="text-sm text-green-600">
-                                Save Rs. {(product.price - product.discount).toFixed(2)} ({getDiscountPercentage(product.price, product.discount)}% off)
                               </span>
                             </div>
                           </>
