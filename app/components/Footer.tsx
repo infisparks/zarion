@@ -75,8 +75,7 @@ export default function Footer() {
               </li>
               <li className="flex items-center gap-3 text-gray-400">
                 <Mail className="w-5 h-5" />
-                contact@luxe.com
-              </li>
+                contact@Zarion              </li>
             </ul>
           </div>
         </div>
@@ -84,7 +83,7 @@ export default function Footer() {
         <div className="mt-12 pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-gray-400 text-sm">
-              © 2024 LUXE. All rights reserved.
+              © 2024 Zarion. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a href="#" className="text-gray-400 hover:text-white text-sm transition">

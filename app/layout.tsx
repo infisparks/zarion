@@ -7,7 +7,7 @@ import Footer from "./components/Footer";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "LUXE - Premium Fashion",
+  title: "Zarion - Premium Fashion",
   description: "Premium fashion destination offering curated collections",
 };
 

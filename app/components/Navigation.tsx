@@ -23,7 +23,7 @@ export default function Navigation() {
   // - On all other routes: text is always black.
   const desktopTextClass = () => {
     if (!isHome) return "text-black";
-    return isScrolled ? "text-black" : "text-white";
+    return isScrolled ? "text-black" : "text-black";
   };
 
   const desktopLinkClass = (linkPath: string) => {
@@ -31,7 +31,7 @@ export default function Navigation() {
       ? "text-black"
       : isScrolled
       ? "text-gray-800"
-      : "text-white";
+      : "text-black";
     return `${baseClass} hover:opacity-70 transition ${pathname === linkPath ? "font-semibold" : ""}`;
   };
 
