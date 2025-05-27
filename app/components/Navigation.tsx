@@ -1,47 +1,43 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { Home, Search, ShoppingCart, User } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react"
+import { Home, Search, ShoppingCart, User } from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 export default function Navigation() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const pathname = usePathname();
-  const isHome = pathname === "/";
+  const [isScrolled, setIsScrolled] = useState(false)
+  const pathname = usePathname()
+  const isHome = pathname === "/"
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+      setIsScrolled(window.scrollY > 20)
+    }
+    window.addEventListener("scroll", handleScroll)
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
   // For desktop navigation:
   // - On the home page: text is white (or gray for links) until you scroll, then turns black.
   // - On all other routes: text is always black.
   const desktopTextClass = () => {
-    if (!isHome) return "text-black";
-    return isScrolled ? "text-black" : "text-black";
-  };
+    if (!isHome) return "text-black"
+    return isScrolled ? "text-black" : "text-black"
+  }
 
   const desktopLinkClass = (linkPath: string) => {
-    const baseClass = !isHome
-      ? "text-black"
-      : isScrolled
-      ? "text-gray-800"
-      : "text-black";
-    return `${baseClass} hover:opacity-70 transition ${pathname === linkPath ? "font-semibold" : ""}`;
-  };
+    const baseClass = !isHome ? "text-black" : isScrolled ? "text-gray-800" : "text-black"
+    return `${baseClass} hover:opacity-70 transition ${pathname === linkPath ? "font-semibold" : ""}`
+  }
 
   // For mobile bottom navigation:
   // - On the home page, the active link is black while inactive ones are gray.
   // - On all other routes, all nav link texts are always black.
   const mobileLinkClass = (linkPath: string) => {
-    if (!isHome) return "text-black";
-    return pathname === linkPath ? "text-black" : "text-gray-500";
-  };
+    if (!isHome) return "text-black"
+    return pathname === linkPath ? "text-black" : "text-gray-500"
+  }
 
   return (
     <>
@@ -131,5 +127,5 @@ export default function Navigation() {
         </div>
       </div>
     </>
-  );
+  )
 }

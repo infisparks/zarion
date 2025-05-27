@@ -21,7 +21,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Navigation />
-        <main className="min-h-screen pt-16 md:pt-0 pb-16 mt-0 md:pb-0">
+        <main className="min-h-screen  md:pt-0 pb-16 mt-0 md:pb-0">
           {children}
         </main>
         <Footer />
